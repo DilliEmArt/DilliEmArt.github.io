@@ -52,7 +52,7 @@
         .stat-plus-button:hover { color: #9ecbff; text-shadow: 0 0 5px #58a6ff; transform: scale(1.2); }
         .skill-slot { border: 1px dashed #30363d; background-color: rgba(88, 166, 255, 0.05); }
 
-        /* Quest Page Specific */
+        /* Quest & Achievement Page Specific */
         .quest-item {
             background-color: rgba(88, 166, 255, 0.05);
             border-left: 4px solid #4a4a4f;
@@ -89,22 +89,13 @@
         .area-tag { background-color: rgba(88, 166, 255, 0.1); color: #58a6ff; }
         .progress-bar-bg { background-color: #4a4a4f; }
         .progress-bar-fill { background-color: #58a6ff; }
-
-        /* Inventory Page Specific */
-        .item-slot {
-            background-color: rgba(88, 166, 255, 0.05);
-            border: 1px solid #4a4a4f;
-            aspect-ratio: 1 / 1;
-            position: relative;
-            cursor: pointer;
+        .achievement-item {
+            background-color: rgba(46, 160, 67, 0.1);
+            border-left: 4px solid #2ea043;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            color: #a3bfb0;
         }
-        .item-slot:hover { border-color: #58a6ff; }
-        .item-slot.empty { background-color: transparent; border-style: dashed; }
-        .item-icon { font-size: 2.5rem; line-height: 1; user-select: none; }
-        .item-quantity { position: absolute; bottom: 2px; right: 4px; font-size: 0.8rem; font-weight: bold; color: white; text-shadow: 1px 1px 2px black; }
-        .item-equipped-indicator { position: absolute; top: 4px; left: 4px; width: 10px; height: 10px; background-color: #34d399; border-radius: 9999px; border: 1px solid white; box-shadow: 0 0 5px #34d399; }
-        .item-modal-backdrop { background-color: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
-        .item-modal-content { background-color: #1c1d24; border: 1px solid #3a3b44; }
 
     </style>
 </head>
@@ -120,7 +111,7 @@
             <div class="pt-4 space-y-3">
                 <button id="view-full-status-btn" class="nav-button w-full text-white font-bold py-3 px-4 rounded-lg">สถานะเต็มรูปแบบ</button>
                 <button id="view-quests-btn" class="nav-button w-full text-white font-bold py-3 px-4 rounded-lg">ระบบเควส</button>
-                <button id="view-inventory-btn" class="nav-button w-full text-white font-bold py-3 px-4 rounded-lg">คลังเก็บของ</button>
+                <button id="view-achievements-btn" class="nav-button w-full text-white font-bold py-3 px-4 rounded-lg">ช่องเก็บความสำเร็จ</button>
             </div>
         </div>
     </div>
@@ -140,11 +131,16 @@
         </div>
     </div>
     
-    <!-- Inventory Page -->
-    <div id="inventory-page" class="hidden w-full">
-        <div class="relative window-container w-full max-w-2xl rounded-lg p-6 mx-auto">
-             <h2 class="window-header text-2xl font-bold text-center pb-3 mb-4">คลังเก็บของ</h2>
-             <div id="inventory-grid" class="inventory-grid mb-4"></div><div class="flex gap-4"><button id="add-item-btn" class="nav-button w-full font-bold py-3 px-4 rounded-lg">จำลองการเพิ่มไอเทม</button><button id="inventory-back-btn" class="nav-button w-full font-bold py-3 px-4 rounded-lg">กลับไปหน้าหลัก</button></div>
+    <!-- Achievements Page -->
+    <div id="achievements-page" class="hidden w-full">
+        <div class="relative window-container w-full max-w-3xl rounded-lg p-6 mx-auto">
+             <h2 class="window-header text-2xl font-bold text-center pb-3 mb-4">ช่องเก็บความสำเร็จ</h2>
+             <div id="achievements-list" class="space-y-2 max-h-[60vh] overflow-y-auto">
+                <!-- Completed quests will be injected here -->
+             </div>
+             <div class="flex gap-4 mt-6">
+                <button id="achievements-back-btn" class="nav-button w-full font-bold py-3 px-4 rounded-lg">กลับไปหน้าหลัก</button>
+             </div>
         </div>
     </div>
     
@@ -175,62 +171,47 @@
         </div>
     </div>
 
-    <!-- Item Interaction Modal -->
-    <div id="item-modal" class="hidden fixed inset-0 item-modal-backdrop flex items-center justify-center z-50">
-        <div class="item-modal-content rounded-lg p-6 w-full max-w-sm text-center space-y-4">
-            <h3 id="modal-item-name" class="text-2xl font-bold">Item Name</h3><div class="flex flex-col space-y-2"><button id="modal-equip-btn" class="nav-button w-full font-bold py-2 px-4 rounded-lg">สวมใส่</button><button id="modal-use-btn" class="nav-button w-full font-bold py-2 px-4 rounded-lg">ใช้งาน</button><button id="modal-drop-btn" class="nav-button w-full font-bold py-2 px-4 rounded-lg bg-red-800/80 hover:bg-red-700/80">ทิ้ง</button></div><button id="modal-cancel-btn" class="mt-4 text-gray-400 hover:text-white">ยกเลิก</button>
-        </div>
-    </div>
-
-
     <script>
-        // --- Mock Data ---
+        // --- DATA SIMULATION (from uploaded CSVs) ---
         let playerData = {
             name: "DillEm", level: 1, job: "Newbie", title: "Loser!", hp: 100, maxHp: 100, fatigue: 0, maxFatigue: 100, currentExp: 0, expToNextLevel: 100,
             stats: { str: 10, vit: 10, agi: 10, int: 10, sense: 10 },
-            remainingPoints: 5,
-            inventory: [ { id: 1, name: "Health Potion", type: "potion", quantity: 5, icon: '🧪' }, { id: 2, name: "Old Sword", type: "weapon", quantity: 1, equipped: true, icon: '🗡️' }, { id: 3, name: "Leather Tunic", type: "armor", quantity: 1, equipped: true, icon: '👕' }, { id: 4, name: "Mana Potion", type: "potion", quantity: 3, icon: '🧪' }, { id: 5, name: "Knight's Sword", type: "weapon", quantity: 1, equipped: false, icon: '⚔️' } ],
-            passiveSkills: ["ช่องสกิลที่ 1", "ช่องสกิลที่ 2", "ช่องสกิลที่ 3", "ช่องสกิลที่ 4", "ช่องสกิลที่ 5"],
-            activeSkills: ["ช่องสกิลที่ 1", "ช่องสกิลที่ 2", "ช่องสกิลที่ 3", "ช่องสกิลที่ 4", "ช่องสกิลที่ 5"],
+            remainingPoints: 5
         };
 
-        let questsData = {
-            daily: [
-                { id: 'd1', name: "ออกกำลังกายตอนเช้า", isComplete: false },
-                { id: 'd2', name: "ออกกำลังกายตอนเย็น", isComplete: true },
-            ],
-            main: [
-                { id: 'p1', name: "ITMS", area: "Project", tasks: ["คำนวณ Sixpack", "เรียนรู้ Basic Network"], tasksComplete: 1 },
-                { id: 'p2', name: "HIKVISION 1ST", area: "Study", tasks: ["ไปหามา M&ตั้งIPกล้อง"], tasksComplete: 0 }
-            ],
-            sub: [
-                { id: 's1', name: "Test Know", area: "Study", isComplete: false },
-                { id: 's2', name: "more data in Network in Cisco Tracer", area: "Study", isComplete: true },
-            ]
-        };
+        let projectsData = [
+            { id: 'p1', name: 'ITMS', area: 'Project', status: 'In progress', subtasks: ['t1', 't2'] },
+            { id: 'p2', name: 'HIKVISION 1ST', area: 'Study', status: 'In progress', subtasks: ['t3'] }
+        ];
+
+        let tasksData = [
+            { id: 't0', name: 'Work out Daily', area: 'Work out', done: false, project: null },
+            { id: 't1', name: 'Calulate Sixpack', area: 'Work out', done: true, project: 'p1' },
+            { id: 't2', name: 'Basic Network', area: 'Study', done: false, project: 'p1' },
+            { id: 't3', name: 'ไปหามา M&ตั้งIPกล้อง', area: 'Study', done: false, project: 'p2' },
+            { id: 't4', name: 'Test Know', area: 'Study', done: false, project: null },
+            { id: 't5', name: 'more data in Network in Cisco Tracer', area: 'Study', done: true, project: null },
+        ];
 
         // --- Page Elements ---
-        const allPages = document.querySelectorAll('#dashboard-page, #full-status-page, #inventory-page, #quests-page');
+        const allPages = document.querySelectorAll('#dashboard-page, #full-status-page, #achievements-page, #quests-page');
         const dashboardPage = document.getElementById('dashboard-page');
         const fullStatusPage = document.getElementById('full-status-page');
-        const inventoryPage = document.getElementById('inventory-page');
+        const achievementsPage = document.getElementById('achievements-page');
         const questsPage = document.getElementById('quests-page');
         
         // --- Navigation Buttons ---
         const viewFullStatusBtn = document.getElementById('view-full-status-btn');
         const fsBackBtn = document.getElementById('fs-back-btn');
         const closeStatusBtn = document.getElementById('close-status-btn');
-        const viewInventoryBtn = document.getElementById('view-inventory-btn');
-        const inventoryBackBtn = document.getElementById('inventory-back-btn');
+        const viewAchievementsBtn = document.getElementById('view-achievements-btn');
+        const achievementsBackBtn = document.getElementById('achievements-back-btn');
         const viewQuestsBtn = document.getElementById('view-quests-btn');
         const questsBackBtn = document.getElementById('quests-back-btn');
 
-        // --- Item Modal Elements ---
-        const itemModal = document.getElementById('item-modal');
-        let selectedItemIndex = null;
-
         // --- UI Functions ---
-        function updateAllUI() { updateDashboardUI(); updateFullStatusUI(); updateInventoryUI(); updateQuestsUI(); }
+        function updateAllUI() { updateDashboardUI(); updateFullStatusUI(); updateQuestsUI(); updateAchievementsUI(); }
+        
         function updateDashboardUI() {
             document.getElementById('player-name-db').textContent = playerData.name;
             document.getElementById('player-level-db').textContent = playerData.level;
@@ -254,80 +235,75 @@
             document.getElementById('fs-sense').textContent = playerData.stats.sense;
             document.getElementById('fs-points').textContent = playerData.remainingPoints;
             document.querySelectorAll('.stat-plus-button').forEach(button => button.style.display = playerData.remainingPoints > 0 ? 'inline' : 'none');
-            const passiveSkillsContainer = document.getElementById('fs-passive-skills'); passiveSkillsContainer.innerHTML = '';
-            playerData.passiveSkills.forEach((skill, index) => { const el = document.createElement('div'); el.className = "skill-slot p-2 text-gray-500"; el.textContent = skill ? `[${index + 1}] ${skill}` : `[${index + 1}]`; passiveSkillsContainer.appendChild(el); });
-            const activeSkillsContainer = document.getElementById('fs-active-skills'); activeSkillsContainer.innerHTML = '';
-            playerData.activeSkills.forEach((skill, index) => { const el = document.createElement('div'); el.className = "skill-slot p-2 text-gray-500"; el.textContent = skill ? `[${index + 1}] ${skill}` : `[${index + 1}]`; activeSkillsContainer.appendChild(el); });
         }
-        function updateInventoryUI() {
-            const inventoryGrid = document.getElementById('inventory-grid');
-            inventoryGrid.innerHTML = '';
-            playerData.inventory.forEach((item, index) => {
-                const slot = document.createElement('div');
-                slot.className = 'item-slot rounded-lg flex items-center justify-center';
-                if (item) {
-                    slot.innerHTML = `<span class="item-icon">${item.icon || '📦'}</span>`;
-                    if (item.quantity > 1) slot.innerHTML += `<span class="item-quantity">${item.quantity}</span>`;
-                    if (item.equipped) slot.innerHTML += `<div class="item-equipped-indicator"></div>`;
-                    slot.addEventListener('click', () => openItemModal(index));
-                } else { slot.classList.add('empty'); }
-                inventoryGrid.appendChild(slot);
+        function updateAchievementsUI() {
+            const achievementsList = document.getElementById('achievements-list');
+            achievementsList.innerHTML = '';
+            const completedTasks = tasksData.filter(t => t.done);
+            if(completedTasks.length === 0) {
+                 achievementsList.innerHTML = '<p class="text-center text-gray-500">ยังไม่มีภารกิจที่สำเร็จ</p>';
+                 return;
+            }
+            completedTasks.forEach(task => {
+                const el = document.createElement('div');
+                el.className = 'achievement-item';
+                el.textContent = `[${task.area}] ${task.name}`;
+                achievementsList.appendChild(el);
             });
         }
         function updateQuestsUI() {
             const dailyList = document.getElementById('daily-quests-list');
             const mainList = document.getElementById('main-quests-list');
             const subList = document.getElementById('sub-quests-list');
-            dailyList.innerHTML = '';
-            mainList.innerHTML = '';
-            subList.innerHTML = '';
+            dailyList.innerHTML = ''; mainList.innerHTML = ''; subList.innerHTML = '';
 
-            // Render Daily Quests
-            questsData.daily.forEach(quest => {
-                const el = document.createElement('div');
-                el.className = 'quest-item p-3 rounded-lg flex items-center gap-4';
-                el.innerHTML = `
-                    <input type="checkbox" id="quest-${quest.id}" data-quest-type="daily" data-quest-id="${quest.id}" class="quest-checkbox" ${quest.isComplete ? 'checked' : ''}>
-                    <label for="quest-${quest.id}" class="flex-grow ${quest.isComplete ? 'quest-title-complete' : 'text-white'}">${quest.name}</label>
-                `;
+            // Render Daily Quests (Area: Work out)
+            tasksData.filter(q => q.area === 'Work out' && !q.done).forEach(quest => {
+                const el = createQuestCheckboxItem(quest);
                 dailyList.appendChild(el);
             });
+
             // Render Main Quests
-            questsData.main.forEach(project => {
-                const percentage = project.tasks.length > 0 ? (project.tasksComplete / project.tasks.length) * 100 : 0;
+            projectsData.filter(p => p.status !== 'Done').forEach(project => {
+                const projectTasks = tasksData.filter(t => project.subtasks.includes(t.id));
+                const tasksComplete = projectTasks.filter(t => t.done).length;
+                const percentage = projectTasks.length > 0 ? (tasksComplete / projectTasks.length) * 100 : 0;
                 const el = document.createElement('div');
                 el.className = 'quest-item p-4 rounded-lg';
-                el.innerHTML = `<div class="flex justify-between items-start"><div><p class="font-bold text-lg text-white">${project.name}</p><div class="text-sm text-gray-400 mt-1">${project.tasks.join(', ')}</div></div><span class="area-tag text-xs font-semibold px-2 py-1 rounded-full">${project.area}</span></div><div class="mt-3"><div class="flex justify-between text-xs text-gray-400 mb-1"><span>ความคืบหน้า</span><span>${Math.round(percentage)}%</span></div><div class="progress-bar-bg w-full rounded-full h-2"><div class="progress-bar-fill h-2 rounded-full" style="width: ${percentage}%"></div></div></div>`;
+                el.innerHTML = `<div class="flex justify-between items-start"><div><p class="font-bold text-lg text-white">${project.name}</p><div class="text-sm text-gray-400 mt-1">${projectTasks.map(t => t.name).join(', ')}</div></div><span class="area-tag text-xs font-semibold px-2 py-1 rounded-full">${project.area}</span></div><div class="mt-3"><div class="flex justify-between text-xs text-gray-400 mb-1"><span>ความคืบหน้า</span><span>${Math.round(percentage)}%</span></div><div class="progress-bar-bg w-full rounded-full h-2"><div class="progress-bar-fill h-2 rounded-full" style="width: ${percentage}%"></div></div></div>`;
                 mainList.appendChild(el);
             });
-            // Render Sub Quests
-            questsData.sub.forEach(quest => {
-                 const el = document.createElement('div');
-                el.className = 'quest-item p-3 rounded-lg flex items-center gap-4';
-                el.innerHTML = `
-                    <input type="checkbox" id="quest-${quest.id}" data-quest-type="sub" data-quest-id="${quest.id}" class="quest-checkbox" ${quest.isComplete ? 'checked' : ''}>
-                    <label for="quest-${quest.id}" class="flex-grow ${quest.isComplete ? 'quest-title-complete' : 'text-white'}">${quest.name}</label>
-                    <span class="area-tag text-xs font-semibold px-2 py-1 rounded-full">${quest.area}</span>
-                `;
+
+            // Render Sub Quests (No Project, Not Daily)
+            tasksData.filter(q => !q.project && q.area !== 'Work out' && !q.done).forEach(quest => {
+                const el = createQuestCheckboxItem(quest);
                 subList.appendChild(el);
             });
-            
-            // Add event listeners after rendering
-            document.querySelectorAll('.quest-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', handleQuestToggle);
-            });
+
+            document.querySelectorAll('.quest-checkbox').forEach(checkbox => checkbox.addEventListener('change', handleQuestToggle));
+        }
+
+        function createQuestCheckboxItem(quest) {
+            const el = document.createElement('div');
+            el.className = 'quest-item p-3 rounded-lg flex items-center gap-4';
+            el.innerHTML = `
+                <input type="checkbox" id="quest-${quest.id}" data-quest-id="${quest.id}" class="quest-checkbox" ${quest.done ? 'checked' : ''}>
+                <label for="quest-${quest.id}" class="flex-grow ${quest.done ? 'quest-title-complete' : 'text-white'}">${quest.name}</label>
+                <span class="area-tag text-xs font-semibold px-2 py-1 rounded-full">${quest.area}</span>
+            `;
+            return el;
         }
         
         // --- Event Handlers & Logic ---
         function handleQuestToggle(event) {
             const checkbox = event.target;
             const questId = checkbox.dataset.questId;
-            const questType = checkbox.dataset.questType;
-            const quest = questsData[questType].find(q => q.id === questId);
+            const quest = tasksData.find(q => q.id === questId);
             if (quest) {
-                quest.isComplete = checkbox.checked;
-                console.log(`Quest '${quest.name}' is now ${quest.isComplete ? 'complete' : 'incomplete'}.`);
-                updateQuestsUI(); // Re-render to show visual changes
+                quest.done = checkbox.checked;
+                console.log(`Quest '${quest.name}' is now ${quest.done ? 'complete' : 'incomplete'}.`);
+                updateQuestsUI(); 
+                updateAchievementsUI();
             }
         }
         
@@ -338,26 +314,11 @@
         viewFullStatusBtn.addEventListener('click', () => { updateFullStatusUI(); showPage(fullStatusPage); });
         fsBackBtn.addEventListener('click', () => showPage(dashboardPage));
         closeStatusBtn.addEventListener('click', () => showPage(dashboardPage));
-        viewInventoryBtn.addEventListener('click', () => { updateInventoryUI(); showPage(inventoryPage); });
-        inventoryBackBtn.addEventListener('click', () => showPage(dashboardPage));
+        viewAchievementsBtn.addEventListener('click', () => { updateAchievementsUI(); showPage(achievementsPage); });
+        achievementsBackBtn.addEventListener('click', () => showPage(dashboardPage));
         viewQuestsBtn.addEventListener('click', () => { updateQuestsUI(); showPage(questsPage); });
         questsBackBtn.addEventListener('click', () => showPage(dashboardPage));
-        function openItemModal(index) {
-            selectedItemIndex = index;
-            const item = playerData.inventory[selectedItemIndex];
-            if (!item) return;
-            document.getElementById('modal-item-name').textContent = item.name;
-            document.getElementById('modal-equip-btn').style.display = ['weapon', 'armor'].includes(item.type) ? 'block' : 'none';
-            document.getElementById('modal-use-btn').style.display = item.type === 'potion' ? 'block' : 'none';
-            document.getElementById('modal-equip-btn').textContent = item.equipped ? "ถอดการติดตั้ง" : "สวมใส่";
-            itemModal.classList.remove('hidden');
-        }
-        function closeItemModal() { itemModal.classList.add('hidden'); selectedItemIndex = null; }
-        document.getElementById('modal-cancel-btn').addEventListener('click', closeItemModal);
-        document.getElementById('modal-use-btn').addEventListener('click', () => { /* Logic */ });
-        document.getElementById('modal-equip-btn').addEventListener('click', () => { /* Logic */ });
-        document.getElementById('modal-drop-btn').addEventListener('click', () => { /* Logic */ });
-        document.getElementById('add-item-btn').addEventListener('click', () => { /* Logic */ });
+        
         document.querySelectorAll('.stat-plus-button').forEach(button => {
             button.addEventListener('click', (event) => {
                 if (playerData.remainingPoints > 0) {
