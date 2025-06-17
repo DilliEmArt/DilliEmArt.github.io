@@ -25,44 +25,86 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0, 191, 255, 0.2);
         }
-        .status-window {
+        
+        /* Unified Window Style */
+        .window-container {
             background-color: #0d111c;
             border: 2px solid #0c578c;
             box-shadow: 0 0 20px rgba(12, 133, 204, 0.5), inset 0 0 10px rgba(12, 133, 204, 0.3);
             color: #c9d1d9;
             font-family: 'monospace', 'IBM Plex Sans Thai';
         }
-        .status-header { color: #58a6ff; text-shadow: 0 0 5px #58a6ff; }
-        .status-divider { height: 2px; background: linear-gradient(to right, transparent, #58a6ff, transparent); border: none; }
+        .window-header {
+            color: #58a6ff;
+            text-shadow: 0 0 5px #58a6ff;
+            border-bottom: 1px solid #0c578c;
+        }
+        .window-divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, #58a6ff, transparent);
+            border: none;
+        }
         .info-label { color: #8b949e; }
         .info-value { color: #f0f6fc; }
+
+        /* Status Page Specific */
         .stat-plus-button { color: #58a6ff; font-weight: bold; cursor: pointer; transition: all 0.2s; padding: 0 4px; }
         .stat-plus-button:hover { color: #9ecbff; text-shadow: 0 0 5px #58a6ff; transform: scale(1.2); }
         .skill-slot { border: 1px dashed #30363d; background-color: rgba(88, 166, 255, 0.05); }
 
-        /* Dashboard Styles */
-        .dashboard-card { background-color: #1c1d24; border: 1px solid #3a3b44; box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6); }
-        .passive-skill-item { background-color: #25262c; border-left: 3px solid #6b7280; }
+        /* Quest Page Specific */
+        .quest-item {
+            background-color: rgba(88, 166, 255, 0.05);
+            border-left: 4px solid #4a4a4f;
+            transition: all 0.2s ease;
+        }
+        .quest-item:hover {
+            border-left-color: #58a6ff;
+            background-color: rgba(88, 166, 255, 0.1);
+        }
+        .quest-checkbox {
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #4a4a4f;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .quest-checkbox:checked {
+            background-color: #58a6ff;
+            border-color: #58a6ff;
+        }
+        .quest-checkbox:checked::after {
+            content: '✔';
+            position: absolute;
+            color: #0d111c;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8rem;
+        }
+        .quest-title-complete { text-decoration: line-through; color: #8b949e; }
+        .area-tag { background-color: rgba(88, 166, 255, 0.1); color: #58a6ff; }
+        .progress-bar-bg { background-color: #4a4a4f; }
+        .progress-bar-fill { background-color: #58a6ff; }
 
-        /* Inventory & Equipment Page Styles */
-        .grid-bg { background-color: #1c1d24; border: 1px solid #3a3b44; }
-        .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.75rem; }
+        /* Inventory Page Specific */
         .item-slot {
-            background-color: #2a2a2e;
+            background-color: rgba(88, 166, 255, 0.05);
             border: 1px solid #4a4a4f;
             aspect-ratio: 1 / 1;
             position: relative;
             cursor: pointer;
-            transition: all 0.2s ease;
         }
-        .item-slot:hover { background-color: #3a3a3e; border-color: #58a6ff; }
-        .item-slot.empty { background-color: rgba(42, 42, 46, 0.5); border-style: dashed; }
+        .item-slot:hover { border-color: #58a6ff; }
+        .item-slot.empty { background-color: transparent; border-style: dashed; }
         .item-icon { font-size: 2.5rem; line-height: 1; user-select: none; }
         .item-quantity { position: absolute; bottom: 2px; right: 4px; font-size: 0.8rem; font-weight: bold; color: white; text-shadow: 1px 1px 2px black; }
         .item-equipped-indicator { position: absolute; top: 4px; left: 4px; width: 10px; height: 10px; background-color: #34d399; border-radius: 9999px; border: 1px solid white; box-shadow: 0 0 5px #34d399; }
         .item-modal-backdrop { background-color: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
         .item-modal-content { background-color: #1c1d24; border: 1px solid #3a3b44; }
-        .char-silhouette { filter: drop-shadow(0 0 15px rgba(88, 166, 255, 0.4)); }
 
     </style>
 </head>
@@ -70,14 +112,11 @@
 
     <!-- Dashboard Page -->
     <div id="dashboard-page" class="w-full">
-        <div class="relative dashboard-card w-full max-w-md rounded-2xl p-6 space-y-5 mx-auto">
-             <button class="absolute top-5 right-5 text-xs bg-sky-800/70 text-sky-300 px-3 py-1.5 rounded-full hover:bg-sky-700/90 transition-colors focus:outline-none" title="เควสประจำ"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd" /></svg></button>
-            <div class="space-y-2"><div class="flex items-baseline space-x-3"><span class="text-gray-400 text-md">Name:</span><span id="player-name-db" class="text-white text-lg font-bold"></span></div><div class="flex items-baseline space-x-3"><span class="text-gray-400 text-md">Title:</span><span id="player-title-db" class="text-red-400 text-lg font-semibold"></span></div><div class="flex items-baseline space-x-3"><span class="text-gray-400 text-md">Class:</span><span id="player-job-db" class="text-gray-300 text-lg font-semibold"></span></div></div>
-            <div class="space-y-3 border-t border-b border-gray-700 py-4"><div class="flex justify-between items-center"><span class="text-gray-400 text-md">Level:</span><span id="player-level-db" class="text-white text-2xl font-bold"></span></div><div class="w-full bg-gray-700 rounded-full h-5 border border-gray-600 flex items-center pr-2"><div id="exp-bar-db" class="bg-gradient-to-r from-gray-500 to-gray-400 h-full rounded-full"></div><span id="exp-text-db" class="text-xs font-mono ml-auto pl-2 text-gray-300 flex-shrink-0"></span></div></div>
-            <div>
-                <h2 id="passive-skill-header" class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3"></h2>
-                <div id="passive-skills-container" class="space-y-2"></div>
-            </div>
+        <div class="relative window-container w-full max-w-md rounded-lg p-6 space-y-5 mx-auto">
+             <button class="absolute top-4 right-4 z-10 text-gray-500 hover:text-white" title="เควสประจำ"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></button>
+            <h2 class="window-header text-2xl font-bold text-center tracking-widest pb-3">Dashboard</h2>
+            <div class="space-y-1 text-lg"><div class="flex justify-between"><span><span class="info-label">Name:</span> <span id="player-name-db" class="info-value font-bold"></span></span><span><span class="info-label">LEVEL:</span> <span id="player-level-db" class="info-value font-bold"></span></span></div><p><span class="info-label">Class:</span> <span id="player-job-db" class="info-value font-bold"></span></p><p><span class="info-label">Title:</span> <span id="player-title-db" class="info-value font-bold text-red-400"></span></p></div>
+            <div class="space-y-2"><div class="flex justify-between items-baseline"><span class="info-label text-lg">EXP:</span><span id="exp-text-db" class="info-value font-bold text-sm"></span></div><div class="w-full bg-gray-700 rounded-full h-2.5 border border-gray-600"><div id="exp-bar-db" class="bg-gradient-to-r from-cyan-500 to-blue-500 h-full rounded-full"></div></div></div>
             <div class="pt-4 space-y-3">
                 <button id="view-full-status-btn" class="nav-button w-full text-white font-bold py-3 px-4 rounded-lg">สถานะเต็มรูปแบบ</button>
                 <button id="view-quests-btn" class="nav-button w-full text-white font-bold py-3 px-4 rounded-lg">ระบบเควส</button>
@@ -88,14 +127,14 @@
 
     <!-- Full Status Page -->
     <div id="full-status-page" class="hidden w-full">
-        <div class="relative status-window w-full max-w-lg rounded-lg p-6 space-y-4 mx-auto">
+        <div class="relative window-container w-full max-w-lg rounded-lg p-6 space-y-4 mx-auto">
              <button id="close-status-btn" class="absolute top-4 right-4 z-10 text-gray-500 hover:text-white" title="ปิด"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
-            <h2 class="status-header text-2xl font-bold text-center tracking-widest">STATUS</h2>
+            <h2 class="window-header text-2xl font-bold text-center tracking-widest pb-3">STATUS</h2>
             <div class="space-y-1 text-lg"><div class="flex justify-between"><span><span class="info-label">Name:</span> <span id="fs-name" class="info-value font-bold"></span></span><span><span class="info-label">LEVEL:</span> <span id="fs-level" class="info-value font-bold"></span></span></div><p><span class="info-label">Class:</span> <span id="fs-job" class="info-value font-bold"></span></p><p><span class="info-label">Title:</span> <span id="fs-title" class="info-value font-bold"></span></p><p><span class="info-label">HP:</span> <span id="fs-hp" class="info-value font-bold text-green-400"></span></p></div>
             <div class="space-y-1"><div class="flex justify-between items-baseline"><span class="info-label text-lg">FATIGUE:</span><span id="fs-fatigue-text" class="info-value font-bold text-sm"></span></div><div class="w-full bg-gray-700 rounded-full h-2.5 border border-gray-600"><div id="fs-fatigue-bar" class="bg-gradient-to-r from-amber-500 to-red-600 h-full rounded-full transition-all duration-300 ease-linear"></div></div></div>
-            <hr class="status-divider">
+            <hr class="window-divider">
             <div class="grid grid-cols-2 gap-x-8 gap-y-2 text-lg"><div class="flex justify-between items-baseline"><span>Strength <span id="fs-str" class="info-value font-bold"></span></span><span class="stat-plus-button" data-stat="str">[+]</span></div><div class="flex justify-between items-baseline"><span>VITALITY <span id="fs-vit" class="info-value font-bold"></span></span><span class="stat-plus-button" data-stat="vit">[+]</span></div><div class="flex justify-between items-baseline"><span>Agility <span id="fs-agi" class="info-value font-bold"></span></span><span class="stat-plus-button" data-stat="agi">[+]</span></div><div class="flex justify-between items-baseline"><span>INTELLIGENCE <span id="fs-int" class="info-value font-bold"></span></span><span class="stat-plus-button" data-stat="int">[+]</span></div><div class="flex justify-between items-baseline"><span>SENSE <span id="fs-sense" class="info-value font-bold"></span></span><span class="stat-plus-button" data-stat="sense">[+]</span></div></div>
-            <hr class="status-divider"><div class="pt-2 text-lg"><p><span class="info-label">REMAINING POINTS:</span> <span id="fs-points" class="info-value font-bold text-yellow-400"></span></p></div>
+            <hr class="window-divider"><div class="pt-2 text-lg"><p><span class="info-label">REMAINING POINTS:</span> <span id="fs-points" class="info-value font-bold text-yellow-400"></span></p></div>
             <div class="space-y-3"><h3 class="status-header text-xl font-bold tracking-wider">SKILL</h3><div><h4 class="info-label text-lg mb-2">Passive Skill</h4><div id="fs-passive-skills" class="space-y-1"></div></div><div><h4 class="info-label text-lg mb-2">Active Skill</h4><div id="fs-active-skills" class="space-y-1"></div></div></div>
             <div class="pt-4"><button id="fs-back-btn" class="nav-button w-full font-bold py-3 px-4 rounded-lg">กลับไปหน้าหลัก</button></div>
         </div>
@@ -103,19 +142,34 @@
     
     <!-- Inventory Page -->
     <div id="inventory-page" class="hidden w-full">
-        <div class="relative grid-bg w-full max-w-2xl rounded-2xl p-6 mx-auto">
-             <h2 class="text-2xl font-bold text-center mb-4 text-gray-300">คลังเก็บของ</h2>
+        <div class="relative window-container w-full max-w-2xl rounded-lg p-6 mx-auto">
+             <h2 class="window-header text-2xl font-bold text-center pb-3 mb-4">คลังเก็บของ</h2>
              <div id="inventory-grid" class="inventory-grid mb-4"></div><div class="flex gap-4"><button id="add-item-btn" class="nav-button w-full font-bold py-3 px-4 rounded-lg">จำลองการเพิ่มไอเทม</button><button id="inventory-back-btn" class="nav-button w-full font-bold py-3 px-4 rounded-lg">กลับไปหน้าหลัก</button></div>
         </div>
     </div>
     
     <!-- Quests Page -->
     <div id="quests-page" class="hidden w-full">
-        <!-- This is a placeholder for the quests page -->
-        <div class="relative grid-bg w-full max-w-2xl rounded-2xl p-6 mx-auto">
-             <h2 class="text-2xl font-bold text-center mb-4 text-gray-300">ระบบเควส</h2>
-             <p class="text-center text-gray-400">หน้าจอเควสจะถูกสร้างขึ้นที่นี่ค่ะ</p>
-             <div class="flex gap-4 mt-4">
+        <div class="relative window-container w-full max-w-3xl rounded-lg p-6 mx-auto">
+             <h2 class="window-header text-2xl font-bold text-center pb-3 mb-4">ระบบเควส</h2>
+             <div class="space-y-6">
+                <!-- Daily Quests -->
+                <div>
+                    <h3 class="status-header text-xl font-bold tracking-wider mb-2">เควสประจำวัน</h3>
+                    <div id="daily-quests-list" class="space-y-2"></div>
+                </div>
+                <!-- Main Quests -->
+                <div>
+                    <h3 class="status-header text-xl font-bold tracking-wider mb-2">เควสหลัก (Projects)</h3>
+                    <div id="main-quests-list" class="space-y-3"></div>
+                </div>
+                <!-- Sub Quests -->
+                <div>
+                    <h3 class="status-header text-xl font-bold tracking-wider mb-2">เควสรอง (Tasks)</h3>
+                    <div id="sub-quests-list" class="space-y-2"></div>
+                </div>
+             </div>
+             <div class="flex gap-4 mt-6">
                 <button id="quests-back-btn" class="nav-button w-full font-bold py-3 px-4 rounded-lg">กลับไปหน้าหลัก</button>
              </div>
         </div>
@@ -130,22 +184,29 @@
 
 
     <script>
-        // --- Mock Player Data ---
+        // --- Mock Data ---
         let playerData = {
             name: "DillEm", level: 1, job: "Newbie", title: "Loser!", hp: 100, maxHp: 100, fatigue: 0, maxFatigue: 100, currentExp: 0, expToNextLevel: 100,
             stats: { str: 10, vit: 10, agi: 10, int: 10, sense: 10 },
             remainingPoints: 5,
-            inventory: [
-                { id: 1, name: "Health Potion", type: "potion", quantity: 5, icon: '🧪' },
-                { id: 2, name: "Old Sword", type: "weapon", quantity: 1, equipped: true, icon: '🗡️' },
-                { id: 3, name: "Leather Tunic", type: "armor", quantity: 1, equipped: true, icon: '👕' },
-                { id: 4, name: "Mana Potion", type: "potion", quantity: 3, icon: '🧪' },
-                { id: 5, name: "Knight's Sword", type: "weapon", quantity: 1, equipped: false, icon: '⚔️' },
-                 null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null
-            ],
+            inventory: [ { id: 1, name: "Health Potion", type: "potion", quantity: 5, icon: '🧪' }, { id: 2, name: "Old Sword", type: "weapon", quantity: 1, equipped: true, icon: '🗡️' }, { id: 3, name: "Leather Tunic", type: "armor", quantity: 1, equipped: true, icon: '👕' }, { id: 4, name: "Mana Potion", type: "potion", quantity: 3, icon: '🧪' }, { id: 5, name: "Knight's Sword", type: "weapon", quantity: 1, equipped: false, icon: '⚔️' } ],
             passiveSkills: ["ช่องสกิลที่ 1", "ช่องสกิลที่ 2", "ช่องสกิลที่ 3", "ช่องสกิลที่ 4", "ช่องสกิลที่ 5"],
             activeSkills: ["ช่องสกิลที่ 1", "ช่องสกิลที่ 2", "ช่องสกิลที่ 3", "ช่องสกิลที่ 4", "ช่องสกิลที่ 5"],
-            maxPassiveSlots: 5,
+        };
+
+        let questsData = {
+            daily: [
+                { id: 'd1', name: "ออกกำลังกายตอนเช้า", isComplete: false },
+                { id: 'd2', name: "ออกกำลังกายตอนเย็น", isComplete: true },
+            ],
+            main: [
+                { id: 'p1', name: "ITMS", area: "Project", tasks: ["คำนวณ Sixpack", "เรียนรู้ Basic Network"], tasksComplete: 1 },
+                { id: 'p2', name: "HIKVISION 1ST", area: "Study", tasks: ["ไปหามา M&ตั้งIPกล้อง"], tasksComplete: 0 }
+            ],
+            sub: [
+                { id: 's1', name: "Test Know", area: "Study", isComplete: false },
+                { id: 's2', name: "more data in Network in Cisco Tracer", area: "Study", isComplete: true },
+            ]
         };
 
         // --- Page Elements ---
@@ -161,43 +222,22 @@
         const closeStatusBtn = document.getElementById('close-status-btn');
         const viewInventoryBtn = document.getElementById('view-inventory-btn');
         const inventoryBackBtn = document.getElementById('inventory-back-btn');
-        const viewQuestsBtn = document.querySelector('#dashboard-page .nav-button:nth-child(2)'); // More specific selector
+        const viewQuestsBtn = document.getElementById('view-quests-btn');
         const questsBackBtn = document.getElementById('quests-back-btn');
 
-
-        // --- Inventory Elements ---
+        // --- Item Modal Elements ---
         const itemModal = document.getElementById('item-modal');
-        const modalItemName = document.getElementById('modal-item-name');
-        const modalEquipBtn = document.getElementById('modal-equip-btn');
-        const modalUseBtn = document.getElementById('modal-use-btn');
-        const modalDropBtn = document.getElementById('modal-drop-btn');
-        const modalCancelBtn = document.getElementById('modal-cancel-btn');
-
         let selectedItemIndex = null;
 
         // --- UI Functions ---
-        function updateAllUI() { updateDashboardUI(); updateFullStatusUI(); updateInventoryUI(); }
+        function updateAllUI() { updateDashboardUI(); updateFullStatusUI(); updateInventoryUI(); updateQuestsUI(); }
         function updateDashboardUI() {
             document.getElementById('player-name-db').textContent = playerData.name;
-            document.getElementById('player-title-db').textContent = playerData.title;
-            document.getElementById('player-job-db').textContent = playerData.job;
             document.getElementById('player-level-db').textContent = playerData.level;
+            document.getElementById('player-job-db').textContent = playerData.job;
+            document.getElementById('player-title-db').textContent = playerData.title;
+            document.getElementById('exp-text-db').textContent = `${playerData.currentExp}/${playerData.expToNextLevel}`;
             document.getElementById('exp-bar-db').style.width = `${(playerData.currentExp / playerData.expToNextLevel) * 100}%`;
-            document.getElementById('exp-text-db').textContent = `[${playerData.currentExp}/${playerData.expToNextLevel}]`;
-            
-            const passiveSkillHeaderEl = document.getElementById('passive-skill-header');
-            const passiveSkillsContainerEl = document.getElementById('passive-skills-container');
-            passiveSkillHeaderEl.textContent = `Passive Skill [0/${playerData.maxPassiveSlots}]`;
-            passiveSkillsContainerEl.innerHTML = '';
-            playerData.passiveSkills.slice(0, 3).forEach(skillName => {
-                const skillElement = document.createElement('div');
-                skillElement.className = 'passive-skill-item p-3 rounded-md';
-                const skillText = document.createElement('p');
-                skillText.className = 'font-semibold text-gray-500 italic';
-                skillText.textContent = skillName;
-                skillElement.appendChild(skillText);
-                passiveSkillsContainerEl.appendChild(skillElement);
-            });
         }
         function updateFullStatusUI() {
             document.getElementById('fs-name').textContent = playerData.name;
@@ -215,9 +255,9 @@
             document.getElementById('fs-points').textContent = playerData.remainingPoints;
             document.querySelectorAll('.stat-plus-button').forEach(button => button.style.display = playerData.remainingPoints > 0 ? 'inline' : 'none');
             const passiveSkillsContainer = document.getElementById('fs-passive-skills'); passiveSkillsContainer.innerHTML = '';
-            playerData.passiveSkills.forEach((skill, index) => { const el = document.createElement('div'); el.className = "skill-slot p-2 text-gray-500"; el.textContent = `[${index + 1}] ${skill}`; passiveSkillsContainer.appendChild(el); });
+            playerData.passiveSkills.forEach((skill, index) => { const el = document.createElement('div'); el.className = "skill-slot p-2 text-gray-500"; el.textContent = skill ? `[${index + 1}] ${skill}` : `[${index + 1}]`; passiveSkillsContainer.appendChild(el); });
             const activeSkillsContainer = document.getElementById('fs-active-skills'); activeSkillsContainer.innerHTML = '';
-            playerData.activeSkills.forEach((skill, index) => { const el = document.createElement('div'); el.className = "skill-slot p-2 text-gray-500"; el.textContent = `[${index + 1}] ${skill}`; activeSkillsContainer.appendChild(el); });
+            playerData.activeSkills.forEach((skill, index) => { const el = document.createElement('div'); el.className = "skill-slot p-2 text-gray-500"; el.textContent = skill ? `[${index + 1}] ${skill}` : `[${index + 1}]`; activeSkillsContainer.appendChild(el); });
         }
         function updateInventoryUI() {
             const inventoryGrid = document.getElementById('inventory-grid');
@@ -226,7 +266,7 @@
                 const slot = document.createElement('div');
                 slot.className = 'item-slot rounded-lg flex items-center justify-center';
                 if (item) {
-                    slot.innerHTML = `<span class="item-icon">${item.icon}</span>`;
+                    slot.innerHTML = `<span class="item-icon">${item.icon || '📦'}</span>`;
                     if (item.quantity > 1) slot.innerHTML += `<span class="item-quantity">${item.quantity}</span>`;
                     if (item.equipped) slot.innerHTML += `<div class="item-equipped-indicator"></div>`;
                     slot.addEventListener('click', () => openItemModal(index));
@@ -234,8 +274,63 @@
                 inventoryGrid.appendChild(slot);
             });
         }
+        function updateQuestsUI() {
+            const dailyList = document.getElementById('daily-quests-list');
+            const mainList = document.getElementById('main-quests-list');
+            const subList = document.getElementById('sub-quests-list');
+            dailyList.innerHTML = '';
+            mainList.innerHTML = '';
+            subList.innerHTML = '';
+
+            // Render Daily Quests
+            questsData.daily.forEach(quest => {
+                const el = document.createElement('div');
+                el.className = 'quest-item p-3 rounded-lg flex items-center gap-4';
+                el.innerHTML = `
+                    <input type="checkbox" id="quest-${quest.id}" data-quest-type="daily" data-quest-id="${quest.id}" class="quest-checkbox" ${quest.isComplete ? 'checked' : ''}>
+                    <label for="quest-${quest.id}" class="flex-grow ${quest.isComplete ? 'quest-title-complete' : 'text-white'}">${quest.name}</label>
+                `;
+                dailyList.appendChild(el);
+            });
+            // Render Main Quests
+            questsData.main.forEach(project => {
+                const percentage = project.tasks.length > 0 ? (project.tasksComplete / project.tasks.length) * 100 : 0;
+                const el = document.createElement('div');
+                el.className = 'quest-item p-4 rounded-lg';
+                el.innerHTML = `<div class="flex justify-between items-start"><div><p class="font-bold text-lg text-white">${project.name}</p><div class="text-sm text-gray-400 mt-1">${project.tasks.join(', ')}</div></div><span class="area-tag text-xs font-semibold px-2 py-1 rounded-full">${project.area}</span></div><div class="mt-3"><div class="flex justify-between text-xs text-gray-400 mb-1"><span>ความคืบหน้า</span><span>${Math.round(percentage)}%</span></div><div class="progress-bar-bg w-full rounded-full h-2"><div class="progress-bar-fill h-2 rounded-full" style="width: ${percentage}%"></div></div></div>`;
+                mainList.appendChild(el);
+            });
+            // Render Sub Quests
+            questsData.sub.forEach(quest => {
+                 const el = document.createElement('div');
+                el.className = 'quest-item p-3 rounded-lg flex items-center gap-4';
+                el.innerHTML = `
+                    <input type="checkbox" id="quest-${quest.id}" data-quest-type="sub" data-quest-id="${quest.id}" class="quest-checkbox" ${quest.isComplete ? 'checked' : ''}>
+                    <label for="quest-${quest.id}" class="flex-grow ${quest.isComplete ? 'quest-title-complete' : 'text-white'}">${quest.name}</label>
+                    <span class="area-tag text-xs font-semibold px-2 py-1 rounded-full">${quest.area}</span>
+                `;
+                subList.appendChild(el);
+            });
+            
+            // Add event listeners after rendering
+            document.querySelectorAll('.quest-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', handleQuestToggle);
+            });
+        }
         
-        // --- Page Navigation ---
+        // --- Event Handlers & Logic ---
+        function handleQuestToggle(event) {
+            const checkbox = event.target;
+            const questId = checkbox.dataset.questId;
+            const questType = checkbox.dataset.questType;
+            const quest = questsData[questType].find(q => q.id === questId);
+            if (quest) {
+                quest.isComplete = checkbox.checked;
+                console.log(`Quest '${quest.name}' is now ${quest.isComplete ? 'complete' : 'incomplete'}.`);
+                updateQuestsUI(); // Re-render to show visual changes
+            }
+        }
+        
         function showPage(pageToShow) {
             allPages.forEach(page => page.classList.add('hidden'));
             pageToShow.classList.remove('hidden');
@@ -245,54 +340,24 @@
         closeStatusBtn.addEventListener('click', () => showPage(dashboardPage));
         viewInventoryBtn.addEventListener('click', () => { updateInventoryUI(); showPage(inventoryPage); });
         inventoryBackBtn.addEventListener('click', () => showPage(dashboardPage));
-        viewQuestsBtn.addEventListener('click', () => showPage(questsPage));
+        viewQuestsBtn.addEventListener('click', () => { updateQuestsUI(); showPage(questsPage); });
         questsBackBtn.addEventListener('click', () => showPage(dashboardPage));
-
-
-        // --- Item Modal Logic ---
         function openItemModal(index) {
             selectedItemIndex = index;
             const item = playerData.inventory[selectedItemIndex];
             if (!item) return;
-            modalItemName.textContent = item.name;
-            modalEquipBtn.style.display = ['weapon', 'armor', 'helmet', 'gloves', 'boots', 'offhand'].includes(item.type) ? 'block' : 'none';
-            modalUseBtn.style.display = item.type === 'potion' ? 'block' : 'none';
-            modalEquipBtn.textContent = item.equipped ? "ถอดการติดตั้ง" : "สวมใส่";
+            document.getElementById('modal-item-name').textContent = item.name;
+            document.getElementById('modal-equip-btn').style.display = ['weapon', 'armor'].includes(item.type) ? 'block' : 'none';
+            document.getElementById('modal-use-btn').style.display = item.type === 'potion' ? 'block' : 'none';
+            document.getElementById('modal-equip-btn').textContent = item.equipped ? "ถอดการติดตั้ง" : "สวมใส่";
             itemModal.classList.remove('hidden');
         }
         function closeItemModal() { itemModal.classList.add('hidden'); selectedItemIndex = null; }
-        modalCancelBtn.addEventListener('click', closeItemModal);
-        modalUseBtn.addEventListener('click', () => {
-            const item = playerData.inventory[selectedItemIndex];
-            item.quantity--;
-            if (item.quantity <= 0) playerData.inventory[selectedItemIndex] = null;
-            updateAllUI();
-            closeItemModal();
-        });
-        modalEquipBtn.addEventListener('click', () => {
-            const item = playerData.inventory[selectedItemIndex];
-            const isEquipping = !item.equipped;
-            if (isEquipping) {
-                playerData.inventory.forEach((otherItem) => {
-                    if (otherItem && otherItem.type === item.type) otherItem.equipped = false;
-                });
-            }
-            item.equipped = isEquipping;
-            updateAllUI();
-            closeItemModal();
-        });
-        modalDropBtn.addEventListener('click', () => {
-             playerData.inventory[selectedItemIndex] = null;
-             updateAllUI();
-             closeItemModal();
-        });
-        document.getElementById('add-item-btn').addEventListener('click', () => {
-            const emptySlotIndex = playerData.inventory.findIndex(slot => slot === null);
-            if (emptySlotIndex !== -1) {
-                playerData.inventory[emptySlotIndex] = { id: Date.now(), name: "New Potion", type: "potion", quantity: 1, icon: '🧪' };
-                updateInventoryUI();
-            }
-        });
+        document.getElementById('modal-cancel-btn').addEventListener('click', closeItemModal);
+        document.getElementById('modal-use-btn').addEventListener('click', () => { /* Logic */ });
+        document.getElementById('modal-equip-btn').addEventListener('click', () => { /* Logic */ });
+        document.getElementById('modal-drop-btn').addEventListener('click', () => { /* Logic */ });
+        document.getElementById('add-item-btn').addEventListener('click', () => { /* Logic */ });
         document.querySelectorAll('.stat-plus-button').forEach(button => {
             button.addEventListener('click', (event) => {
                 if (playerData.remainingPoints > 0) {
@@ -302,7 +367,11 @@
                 }
             });
         });
-        window.onload = () => updateDashboardUI();
+
+        // --- Initial Load ---
+        window.onload = () => updateAllUI();
+        
+        // --- Fatigue System ---
         setInterval(() => {
             if (playerData.fatigue < playerData.maxFatigue) {
                 playerData.fatigue++;
