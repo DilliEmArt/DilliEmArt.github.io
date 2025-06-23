@@ -190,7 +190,7 @@
             const password = document.getElementById('password').value;
             const salary = parseFloat(document.getElementById('salary').value);
 
-            if (username === 'admin' && password === '123') {
+            if (username === 'admin' && password === 'admin') {
                 if (isNaN(salary) || salary <= 0) {
                     loginError.textContent = 'กรุณากรอกเงินเดือนให้ถูกต้อง';
                     return;
@@ -412,7 +412,7 @@
             XLSX.utils.sheet_add_aoa(ws, [["วันที่", "เวลาเริ่ม", "เวลาสิ้นสุด", "ค่าจ้าง/ชม. (บาท)", "อัตรา OT", "ค่า OT รวม (บาท)"]], { origin: "A1" });
             
             // --- Add Summary Section ---
-            const salary = parseFloat(sessionStorage.getItem('salary')) || 0;
+            
             const monthlyOtTotal = dataToExport.reduce((sum, item) => sum + item.totalOTPay, 0);
             const grandTotal = salary + monthlyOtTotal;
 
