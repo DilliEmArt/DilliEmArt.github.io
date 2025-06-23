@@ -47,6 +47,10 @@
                         <label for="password" class="block text-sm font-medium text-gray-700">รหัสผ่าน</label>
                         <input type="password" id="password" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500" required>
                     </div>
+                    <div>
+                        <label for="salary" class="block text-sm font-medium text-gray-700">เงินเดือน (บาท)</label>
+                        <input type="number" id="salary" min="0" step="0.01" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
                 </div>
                 <p id="login-error" class="text-red-500 text-sm mt-4 text-center h-4"></p>
                 <div class="mt-6">
@@ -77,8 +81,26 @@
                 <div id="calendar-header" class="calendar-grid gap-2 mb-2 text-center font-semibold text-gray-600"></div>
                 <div id="calendar-body" class="calendar-grid gap-2"></div>
 
+                <!-- Totals Display -->
+                <div id="totals-display" class="mt-6 pt-6 border-t border-gray-200">
+                    <div class="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">เงินเดือน</p>
+                            <p id="display-salary" class="mt-1 text-2xl font-semibold text-gray-900">฿0.00</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">ค่าล่วงเวลา (OT)</p>
+                            <p id="display-ot-total" class="mt-1 text-2xl font-semibold text-indigo-600">฿0.00</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">ยอดรวมสุทธิ</p>
+                            <p id="display-grand-total" class="mt-1 text-2xl font-semibold text-green-600">฿0.00</p>
+                        </div>
+                    </div>
+                </div>
+
                  <!-- Controls -->
-                <div class="mt-6 text-center flex justify-center items-center space-x-6">
+                <div class="mt-6 pt-6 border-t border-gray-200 text-center flex justify-center items-center space-x-6">
                     <button id="export-btn" class="px-5 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2 -mt-1" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
@@ -108,7 +130,6 @@
                         <div><label for="start-time" class="block text-sm font-medium text-gray-700">เวลาเริ่ม (น.)</label><input type="time" id="start-time" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500" required></div>
                         <div><label for="end-time" class="block text-sm font-medium text-gray-700">เวลาสิ้นสุด (น.)</label><input type="time" id="end-time" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500" required></div>
                     </div>
-                    <div><label for="base-rate" class="block text-sm font-medium text-gray-700">ค่าจ้าง/ชั่วโมง (บาท)</label><input type="number" id="base-rate" min="0" step="0.01" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500" required></div>
                     <div><label for="ot-multiplier" class="block text-sm font-medium text-gray-700">อัตรา OT</label><select id="ot-multiplier" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"><option value="1.5">1.5 เท่า</option><option value="2">2 เท่า</option><option value="3">3 เท่า</option></select></div>
                 </div>
                 <div class="flex items-center justify-end mt-6 space-x-3"><button type="button" id="delete-ot" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors hidden">ลบ</button><button type="submit" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">บันทึก</button></div>
@@ -156,6 +177,9 @@
         const confirmModalText = document.getElementById('confirm-modal-text');
         const confirmCancelBtn = document.getElementById('confirm-cancel');
         const confirmDeleteBtn = document.getElementById('confirm-delete');
+        const displaySalary = document.getElementById('display-salary');
+        const displayOtTotal = document.getElementById('display-ot-total');
+        const displayGrandTotal = document.getElementById('display-grand-total');
 
         const dayNames = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
 
@@ -164,9 +188,17 @@
             e.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
+            const salary = parseFloat(document.getElementById('salary').value);
 
             if (username === 'admin' && password === '123') {
+                if (isNaN(salary) || salary <= 0) {
+                    loginError.textContent = 'กรุณากรอกเงินเดือนให้ถูกต้อง';
+                    return;
+                }
+                const hourlyRate = salary / 30 / 8;
                 sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('salary', salary.toString());
+                sessionStorage.setItem('hourlyRate', hourlyRate.toString());
                 showApp();
             } else {
                 loginError.textContent = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
@@ -175,6 +207,8 @@
 
         logoutBtn.addEventListener('click', () => {
             sessionStorage.removeItem('isLoggedIn');
+            sessionStorage.removeItem('hourlyRate');
+            sessionStorage.removeItem('salary');
             showLogin();
         });
 
@@ -228,15 +262,6 @@
             const firstDayOfMonth = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            // Clear data for other months
-            const currentMonthPrefix = `${year}-${(month + 1).toString().padStart(2, '0')}`;
-            for (const dateKey in otData) {
-                if (!dateKey.startsWith(currentMonthPrefix)) {
-                    // This logic could be changed if we want to keep all data in memory across months
-                }
-            }
-
-
             for (let i = 0; i < firstDayOfMonth; i++) {
                 calendarBody.innerHTML += `<div class="bg-gray-50 rounded-lg"></div>`;
             }
@@ -266,6 +291,20 @@
                 dayEl.addEventListener('click', () => openModal(dateStr));
                 calendarBody.appendChild(dayEl);
             }
+
+            // --- Update Totals Display ---
+            const salary = parseFloat(sessionStorage.getItem('salary')) || 0;
+            const currentMonthPrefix = `${year}-${(month + 1).toString().padStart(2, '0')}`;
+
+            const monthlyOtTotal = Object.values(otData)
+                .filter(item => item.date.startsWith(currentMonthPrefix))
+                .reduce((sum, item) => sum + item.totalOTPay, 0);
+
+            const grandTotal = salary + monthlyOtTotal;
+
+            displaySalary.textContent = `฿${salary.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            displayOtTotal.textContent = `฿${monthlyOtTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            displayGrandTotal.textContent = `฿${grandTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         }
 
         function openModal(dateStr) {
@@ -277,7 +316,6 @@
             if (existingData) {
                 document.getElementById('start-time').value = existingData.startTime;
                 document.getElementById('end-time').value = existingData.endTime;
-                document.getElementById('base-rate').value = existingData.baseRate;
                 document.getElementById('ot-multiplier').value = existingData.otMultiplier;
                 deleteOtBtn.classList.remove('hidden');
             } else {
@@ -326,9 +364,10 @@
             if (diffMs < 0) diffMs += 24 * 60 * 60 * 1000;
             const hours = diffMs / 3600000;
 
-            const baseRate = parseFloat(document.getElementById('base-rate').value);
-            if (isNaN(hours) || hours <= 0 || isNaN(baseRate)) {
-                alert('กรุณากรอกข้อมูลให้ถูกต้อง');
+            const hourlyRate = parseFloat(sessionStorage.getItem('hourlyRate'));
+
+            if (isNaN(hours) || hours <= 0 || isNaN(hourlyRate)) {
+                alert('เกิดข้อผิดพลาดในการคำนวณ หรือไม่พบค่าจ้างรายชั่วโมง');
                 return;
             }
 
@@ -336,9 +375,9 @@
                 date: date,
                 startTime: document.getElementById('start-time').value,
                 endTime: document.getElementById('end-time').value,
-                baseRate: baseRate,
+                baseRate: hourlyRate,
                 otMultiplier: parseFloat(document.getElementById('ot-multiplier').value),
-                totalOTPay: hours * baseRate * parseFloat(document.getElementById('ot-multiplier').value)
+                totalOTPay: hours * hourlyRate * parseFloat(document.getElementById('ot-multiplier').value)
             };
             saveData(dataToSave);
         });
@@ -371,6 +410,22 @@
             });
             
             XLSX.utils.sheet_add_aoa(ws, [["วันที่", "เวลาเริ่ม", "เวลาสิ้นสุด", "ค่าจ้าง/ชม. (บาท)", "อัตรา OT", "ค่า OT รวม (บาท)"]], { origin: "A1" });
+            
+            // --- Add Summary Section ---
+            const salary = parseFloat(sessionStorage.getItem('salary')) || 0;
+            const monthlyOtTotal = dataToExport.reduce((sum, item) => sum + item.totalOTPay, 0);
+            const grandTotal = salary + monthlyOtTotal;
+
+            const summaryData = [
+                [], // Empty row for spacing
+                ["สรุปยอดประจำเดือน"],
+                ["เงินเดือน", salary],
+                ["รวมค่าล่วงเวลา (OT)", monthlyOtTotal],
+                ["ยอดรวมสุทธิ", grandTotal]
+            ];
+            
+            // Append summary data to the end of the sheet
+            XLSX.utils.sheet_add_aoa(ws, summaryData, { origin: -1 });
 
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "OT Report");
